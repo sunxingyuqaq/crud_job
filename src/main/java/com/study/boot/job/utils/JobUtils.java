@@ -16,7 +16,10 @@ public class JobUtils {
             Scheduler scheduler = schedulerFactory.getScheduler();
             // 任务名，任务组，任务执行类
             /// Trigger.TriggerState state = scheduler.getTriggerState();
-            JobDetail jobDetail = JobBuilder.newJob(jobClass).withIdentity(jobName, jobGroupName).build();
+            JobDataMap dataMap = new JobDataMap();
+            dataMap.put("username","test");
+            dataMap.put("id","1");
+            JobDetail jobDetail = JobBuilder.newJob(jobClass).withIdentity(jobName, jobGroupName).setJobData(dataMap).build();
             // 触发器
             TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger();
             // 触发器名,触发器组
