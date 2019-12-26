@@ -1,6 +1,5 @@
 package com.study.boot.job;
 
-import com.study.boot.job.demo.MyJob;
 import com.study.boot.job.utils.JobUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
