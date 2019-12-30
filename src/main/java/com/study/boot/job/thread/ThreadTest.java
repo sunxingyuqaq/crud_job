@@ -4,6 +4,7 @@ import cn.hutool.core.lang.Console;
 import cn.hutool.core.util.RandomUtil;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.study.boot.job.model.UserModel;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.concurrent.*;
 @Slf4j
 public class ThreadTest {
 
+    @Getter
     private List<UserModel> userModels;
 
     {
