@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>index page</title>
+</head>
+<body>
+<div>
+    <p th:text="${name}"></p>
+
+    <ul th:each="str,stat:${list}">
+        <li th:text="|${stat.index} -- ${str}|"></li>
+    </ul>
+
+    <div th:if="${flag}">flag</div>
+
+    <p th:text="${#dates.format(today,'yyyy-MM-dd')}"></p>
+</div>
+</body>
+</html>
