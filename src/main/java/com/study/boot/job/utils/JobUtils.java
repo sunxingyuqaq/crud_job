@@ -1,50 +1,46 @@
 package com.study.boot.job.utils;
 
 import org.quartz.*;
-import org.quartz.impl.StdSchedulerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * @author Xingyu Sun
  * @date 2019/12/23 15:05
  */
+@Service
 public class JobUtils {
 
-    private static SchedulerFactory schedulerFactory = new StdSchedulerFactory();
+    @Autowired
+    private Scheduler scheduler;
 
-    public static void addJob(String jobName, String jobGroupName, String triggerName, String triggerGroupName, Class jobClass, String cron) {
+    public void addJob(String jobName, String jobGroupName, String triggerName, String triggerGroupName, Class jobClass, String cron) {
         try {
-            Scheduler scheduler = schedulerFactory.getScheduler();
             // 任务名，任务组，任务执行类
             /// Trigger.TriggerState state = scheduler.getTriggerState();
             JobDataMap dataMap = new JobDataMap();
-            dataMap.put("username","test");
-            dataMap.put("id","1");
+            dataMap.put("username", "test");
+            dataMap.put("id", "1");
             JobDetail jobDetail = JobBuilder.newJob(jobClass).withIdentity(jobName, jobGroupName).setJobData(dataMap).build();
             // 触发器
             TriggerBuilder<Trigger> triggerBuilder = TriggerBuilder.newTrigger();
             // 触发器名,触发器组
-            triggerBuilder.withIdentity(triggerName, triggerGroupName);
-            triggerBuilder.startNow();
+            triggerBuilder.withIdentity(triggerName, triggerGroupName).startNow();
+            //cron设置
+            CronScheduleBuilder cronScheduleBuilder = CronScheduleBuilder.cronSchedule("0/5 * * * * ?").withMisfireHandlingInstructionDoNothing();
             // 触发器时间设定
-            triggerBuilder.withSchedule(CronScheduleBuilder.cronSchedule(cron));
+            triggerBuilder.withSchedule(cronScheduleBuilder);
             // 创建Trigger对象
             CronTrigger trigger = (CronTrigger) triggerBuilder.build();
-
             // 调度容器设置JobDetail和Trigger
             scheduler.scheduleJob(jobDetail, trigger);
-
-            // 启动
-            if (!scheduler.isShutdown()) {
-                scheduler.start();
-            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static void startJobs() {
+    public void startJobs() {
         try {
-            Scheduler scheduler = schedulerFactory.getScheduler();
             scheduler.start();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -59,9 +55,8 @@ public class JobUtils {
      * @param cron             时间设置，参考quartz说明文档
      * @Description: 修改一个任务的触发时间
      */
-    public static void modifyJobTime(String jobName, String jobGroupName, String triggerName, String triggerGroupName, String cron) {
+    public void modifyJobTime(String jobName, String jobGroupName, String triggerName, String triggerGroupName, String cron) {
         try {
-            Scheduler scheduler = schedulerFactory.getScheduler();
             TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
             CronTrigger trigger = (CronTrigger) scheduler.getTrigger(triggerKey);
             if (trigger == null) {
@@ -107,9 +102,8 @@ public class JobUtils {
      * @param triggerName
      * @param triggerGroupName
      */
-    public static void removeJob(String jobName, String jobGroupName, String triggerName, String triggerGroupName) {
+    public void removeJob(String jobName, String jobGroupName, String triggerName, String triggerGroupName) {
         try {
-            Scheduler scheduler = schedulerFactory.getScheduler();
             TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
             scheduler.pauseTrigger(triggerKey);
             scheduler.unscheduleJob(triggerKey);
