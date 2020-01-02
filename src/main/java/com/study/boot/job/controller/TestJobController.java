@@ -24,7 +24,7 @@ import java.util.Set;
 @Slf4j
 @RestController
 @RequestMapping("job")
-public class JobController {
+public class TestJobController {
 
     private final static String JOB_NAME = "job";
     private final static String TASK_NAME = "task";
@@ -32,7 +32,7 @@ public class JobController {
     private Scheduler scheduler;
     private JobUtils jobUtils;
 
-    public JobController(Scheduler scheduler, JobUtils jobUtils) {
+    public TestJobController(Scheduler scheduler, JobUtils jobUtils) {
         this.scheduler = scheduler;
         this.jobUtils = jobUtils;
     }

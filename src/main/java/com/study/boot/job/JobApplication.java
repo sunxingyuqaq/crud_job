@@ -18,7 +18,7 @@ import javax.sql.DataSource;
 public class JobApplication {
 
     @Autowired
-    private SchedulerFactoryBean quartzScheduler;
+    private SchedulerFactoryBean factoryBean;
 
     @Autowired
     private DataSource dataSource;
@@ -30,7 +30,7 @@ public class JobApplication {
     @Bean
     public CommandLineRunner runner() {
         return (args -> {
-            log.info("schedule isShutdown ? {}", quartzScheduler.getScheduler().isShutdown());
+            log.info("schedule isShutdown ? {}", factoryBean.getScheduler().isShutdown());
             log.info("class is {}",dataSource.getClass());
         });
     }

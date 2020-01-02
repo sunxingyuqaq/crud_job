@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>jobs</title>
+    <link rel="stylesheet" href="lib/layui/css/layui.css" th:href="@{/lib/layui/css/layui.css}"/>
+</head>
+<style>
+    .box-content {
+        margin: 0 auto;
+        height: 500px;
+        width: 80%;
+    }
+</style>
+<body>
+<div class="box-content">
+    <table id="jobs" class="layui-table"></table>
+</div>
+</body>
+<script src="lib/layui/layui.js" th:src="@{/lib/layui/layui.js}"></script>
+<script>
+    layui.use("table", function () {
+        var table = layui.table;
+        var columns = [
+            {type: 'checkbox', title: '序号', width: 40},
+            {field: 'jobClassName', title: '执行类路径', width: '30%'},
+            {field: 'jobName', title: 'job名称', width: 180},
+            {field: 'jobGroup', title: 'job组', width: 180},
+            {field: 'description', title: '描述', width: 180}
+        ];
+        table.render({
+            elem: "#jobs",
+            url: '/frame/jobs',
+            page: true,
+            cols: [columns],
+            toolbar: true,
+            defaultToolbar: ['filter', 'exports', 'print', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
+                title: '提示',
+                layEvent: 'LAYTABLE_TIPS',
+                icon: 'layui-icon-tips'
+            }],
+            parseData: function (res) {
+                return {
+                    "code": res.code,
+                    "msg": res.msg,
+                    "count": res.total,
+                    "data": res.data
+                };
+            },
+            response: {
+                statusCode: 200
+            }
+        });
+    })
+</script>
+</html>

@@ -1,7 +1,9 @@
 package com.study.boot.job.test;
 
+import cn.hutool.json.JSONUtil;
 import com.study.boot.job.model.UserModel;
 import com.study.boot.job.thread.ThreadTest;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
  * @author Xingyu Sun
  * @date 2019/12/30 17:04
  */
+@Slf4j
 public class SimpleTests {
 
     private List<UserModel> userModels;
@@ -26,18 +29,18 @@ public class SimpleTests {
 
     @Test
     public void test() throws Exception {
-        Object o = CompletableFuture.supplyAsync(
-                () -> userModels.stream().sorted(Comparator.comparingInt(UserModel::getAge))
+        List<UserModel> userModels = CompletableFuture.supplyAsync(
+                () -> this.userModels.stream().sorted(Comparator.comparingInt(UserModel::getAge))
                         .filter(x -> x.getAge() >= 30)
                         .collect(Collectors.toList())
         ).thenCombine(CompletableFuture.supplyAsync(() ->
-                userModels.stream().sorted(Comparator.comparingInt(UserModel::getAge))
+                this.userModels.stream().sorted(Comparator.comparingInt(UserModel::getAge))
                         .filter(y -> y.getAge() < 30)
                         .collect(Collectors.toList()
                         )), (x, y) -> {
             x.addAll(y);
             return x;
         }).exceptionally((args) -> new ArrayList<>()).get();
-        System.out.println(o);
+        userModels.forEach(x -> log.info(JSONUtil.toJsonStr(x)));
     }
 }

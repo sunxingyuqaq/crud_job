@@ -17,15 +17,20 @@ public class IndexController {
 
     @GetMapping({"/index", "/"})
     public String index(Model model) {
-        model.addAttribute("name","test");
+        model.addAttribute("name", "test");
         List<String> in = new ArrayList<>();
         in.add("test0");
         in.add("test1");
         in.add("test2");
         in.add("test3");
-        model.addAttribute("list",in);
-        model.addAttribute("flag",true);
+        model.addAttribute("list", in);
+        model.addAttribute("flag", true);
         model.addAttribute("today", new Date());
         return "index";
+    }
+
+    @GetMapping("/jobs")
+    public String jobs() {
+        return "jobs";
     }
 }
