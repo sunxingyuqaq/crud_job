@@ -14,27 +14,39 @@
 </style>
 <body>
 <div class="box-content">
-    <table id="jobs" class="layui-table"></table>
+    <div class="layui-btn-group opt">
+        <button class="layui-btn" data-type="addJob">新增</button>
+        <button class="layui-btn" data-type="delJobs">删除</button>
+    </div>
+    <table class="layui-table" id="jobs" lay-filter="jobs"></table>
 </div>
 </body>
+<script id="barDemo" type="text/html">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
 <script src="lib/layui/layui.js" th:src="@{/lib/layui/layui.js}"></script>
 <script>
-    layui.use("table", function () {
+    layui.use(["table", "laydate", "jquery"], function () {
         var table = layui.table;
+        var layer = layui.layer;
         var columns = [
             {type: 'checkbox', title: '序号', width: 40},
-            {field: 'jobClassName', title: '执行类路径', width: '30%'},
+            {field: 'jobClassName', title: '执行类路径', width: '25%'},
             {field: 'jobName', title: 'job名称', width: 180},
             {field: 'jobGroup', title: 'job组', width: 180},
-            {field: 'description', title: '描述', width: 180}
+            {field: 'description', title: '描述', width: 180},
+            {fixed: 'right', align: 'center', toolbar: '#barDemo'}
         ];
+        var loading = layer.load(1);
         table.render({
             elem: "#jobs",
-            url: '/frame/jobs',
+            url: '/frame/job/all',
             page: true,
             cols: [columns],
             toolbar: true,
-            defaultToolbar: ['filter', 'exports', 'print', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
+            defaultToolbar: ['filter', 'exports', 'print', {
                 title: '提示',
                 layEvent: 'LAYTABLE_TIPS',
                 icon: 'layui-icon-tips'
@@ -49,7 +61,45 @@
             },
             response: {
                 statusCode: 200
+            },
+            done: function (data) {
+                layer.close(loading);
             }
+        });
+
+        table.on('tool(jobs)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+            var tr = obj.tr;
+            if (layEvent === 'detail') {
+                layer.msg("detail", {icon: 6})
+            } else if (layEvent === 'del') {
+                layer.confirm('真的删除行么', function (index) {
+                    obj.del();
+                    layer.close(index);
+                });
+            } else if (layEvent === 'edit') {
+                obj.update({
+                    username: '123'
+                    , title: 'xxx'
+                });
+            } else if (layEvent === 'LAYTABLE_TIPS') {
+                layer.alert('Hi，头部工具栏扩展的右侧图标。');
+            }
+        });
+
+        var $ = layui.$, active = {
+            addJob: function () {
+                var index = layer.open({});
+            }
+            , delJobs: function () {
+                table.
+            }
+        };
+
+        $('.opt .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
         });
     })
 </script>

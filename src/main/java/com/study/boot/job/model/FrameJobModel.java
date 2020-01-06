@@ -3,6 +3,7 @@ package com.study.boot.job.model;
 import lombok.Builder;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 /**
@@ -11,10 +12,14 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-public class FrameJob implements Serializable {
+public class FrameJobModel implements Serializable {
 
+    private String id;
+    @NotBlank
     private String jobClassName;
+    @NotBlank
     private String jobName;
+    @NotBlank
     private String jobGroup;
     private String description;
 }
