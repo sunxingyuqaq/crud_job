@@ -21,7 +21,7 @@ public interface JobDao {
      * @return l
      * @param pages p
      */
-    @Select("SELECT * FROM QRTZ_JOB_DETAILS")
+    @Select("SELECT * FROM FRAME_JOB")
     @Results({
             @Result(column = "job_class_name", property = "jobClassName", javaType = String.class),
             @Result(column = "job_name", property = "jobName", javaType = String.class),

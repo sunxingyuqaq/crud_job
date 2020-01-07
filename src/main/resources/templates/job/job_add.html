@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>job add</title>
+    <link href="lib/layui/css/layui.css" rel="stylesheet" th:href="@{/lib/layui/css/layui.css}"/>
+</head>
+<body>
+<div style="width: 80%;margin: 0 auto">
+    <form class="layui-form layui-form-pane" style="margin: 0 auto">
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 200px">job class name</label>
+            <div class="layui-input-block" style="margin-left: 200px">
+                <input autocomplete="off" class="layui-input" lay-verify="required" name="jobClassName"
+                       placeholder="请输入job class name" type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 200px">job name</label>
+            <div class="layui-input-block" style="margin-left: 200px">
+                <input autocomplete="off" class="layui-input" lay-verify="required" name="jobName"
+                       placeholder="请输入job name"
+                       type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 200px">job group</label>
+            <div class="layui-input-block" style="margin-left: 200px">
+                <input autocomplete="off" class="layui-input" lay-verify="required" name="jobGroup"
+                       placeholder="请输入job group"
+                       type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 200px">job description</label>
+            <div class="layui-input-block" style="margin-left: 200px">
+                <input autocomplete="off" class="layui-input" name="description"
+                       placeholder="请输入job description" type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <button class="layui-btn" lay-filter="submit" lay-submit="" style="margin-left: 40%" type="submit">提交
+            </button>
+            <button class="layui-btn layui-btn-primary" type="reset">重置</button>
+        </div>
+    </form>
+</div>
+</body>
+<script src="lib/layui/layui.js" th:src="@{/lib/layui/layui.js}"></script>
+<script>
+    layui.use(['form', 'layedit', 'laydate'], function () {
+        var form = layui.form, layer = layui.layer, $ = layui.jquery;
+        //监听提交
+        var index = parent.layer.getFrameIndex(window.name);
+        form.on('submit(submit)', function (data) {
+            $.ajax({
+                type: 'post',
+                url: '/frame/job/add',
+                contentType: 'application/x-www-form-urlencoded',
+                data: data.field,
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code === "200") {
+                        layer.msg("添加成功！");
+                        setTimeout(function () {
+                            parent.layer.close(index);
+                        }, 1500)
+                    } else {
+                        layer.msg(res.msg);
+                    }
+                }
+            });
+            return false;
+        });
+    });
+</script>
+</html>

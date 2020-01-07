@@ -6,18 +6,19 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * @author Xingyu Sun
  * @date 2020/1/2 14:19
  */
 @Data
-@Builder
 @TableName("frame_job")
 public class FrameJob extends BaseEntity {
 
     private static final long serialVersionUID = 3394071070563091105L;
     @TableId(type = IdType.ID_WORKER)
-    private Integer id;
+    private Long id;
     private String jobClassName;
     private String jobName;
     private String jobGroup;
@@ -26,6 +27,22 @@ public class FrameJob extends BaseEntity {
      */
     private Integer type;
     private String description;
+    /**
+     * 执行状态  0未执行  1执行中   默认0
+     */
     private String status;
     private String scheduleName;
+
+    @Builder
+    public FrameJob(Date operateDate, Date updateDate, Long id, String jobClassName, String jobName, String jobGroup, Integer type, String description, String status, String scheduleName) {
+        super(operateDate, updateDate);
+        this.id = id;
+        this.jobClassName = jobClassName;
+        this.jobName = jobName;
+        this.jobGroup = jobGroup;
+        this.type = type;
+        this.description = description;
+        this.status = status;
+        this.scheduleName = scheduleName;
+    }
 }

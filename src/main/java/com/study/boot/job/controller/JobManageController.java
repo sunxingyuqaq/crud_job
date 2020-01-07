@@ -1,5 +1,6 @@
 package com.study.boot.job.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.study.boot.job.dao.JobDao;
@@ -14,6 +15,9 @@ import org.springframework.http.MediaType;
 import org.springframework.util.ClassUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Xingyu Sun
@@ -55,7 +59,21 @@ public class JobManageController {
         }
     }
 
-    @PostMapping(value = "/add", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @DeleteMapping(value = "/delete", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public CommonResult<Object> delete(@RequestParam("params") List<String> params) {
+        if (CollectionUtil.isEmpty(params)) {
+            return CommonResult.fail("error...params can not be empty");
+        } else {
+            List<Long> longs = new ArrayList<>();
+            for (String param : params) {
+                longs.add(Long.parseLong(param));
+            }
+            frameJobService.removeByIds(longs);
+            return CommonResult.success();
+        }
+    }
+
+    @PostMapping(value = "/trigger/add", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public CommonResult<Object> add(@Validated FrameTriggerModel model) {
         boolean exist = frameTriggerService.exist(model.getTriggerName(), model.getTriggerGroup());
         if (exist) {

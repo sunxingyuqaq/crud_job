@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -20,9 +21,10 @@ import java.util.List;
 public class JobControllerAdvice {
 
     @ExceptionHandler(BizException.class)
-    public CommonResult<Result> handle(BizException e) {
+    public CommonResult<Object> handle(BizException e) {
         Result result = e.getResult();
-        return CommonResult.fail(result);
+        String message = e.getMessage();
+        return CommonResult.fail(message, result.getCode());
     }
 
     @ExceptionHandler(RuntimeException.class)
@@ -47,5 +49,12 @@ public class JobControllerAdvice {
             dictList.add(dict);
         }
         return CommonResult.fail(dictList);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public CommonResult<Object> missingServletRequestParameterException(MissingServletRequestParameterException e) {
+        log.error("param error...", e);
+        String message = e.getMessage();
+        return CommonResult.fail(message);
     }
 }

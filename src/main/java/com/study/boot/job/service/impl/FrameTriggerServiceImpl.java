@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class FrameTriggerServiceImpl extends ServiceImpl<FrameTriggerDao, FrameTrigger> implements FrameTriggerService {
+
     @Override
     public boolean exist(String triggerName, String triggerGroup) {
         FrameTrigger frameTrigger = getBaseMapper()

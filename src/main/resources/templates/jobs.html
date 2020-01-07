@@ -37,7 +37,7 @@
             {field: 'jobName', title: 'job名称', width: 180},
             {field: 'jobGroup', title: 'job组', width: 180},
             {field: 'description', title: '描述', width: 180},
-            {fixed: 'right', align: 'center', toolbar: '#barDemo'}
+            {fixed: 'right', align: 'center', title: '操作', toolbar: '#barDemo'}
         ];
         var loading = layer.load(1);
         table.render({
@@ -72,7 +72,7 @@
             var layEvent = obj.event;
             var tr = obj.tr;
             if (layEvent === 'detail') {
-                layer.msg("detail", {icon: 6})
+
             } else if (layEvent === 'del') {
                 layer.confirm('真的删除行么', function (index) {
                     obj.del();
@@ -90,10 +90,49 @@
 
         var $ = layui.$, active = {
             addJob: function () {
-                var index = layer.open({});
+                layer.open({
+                    type: 2,
+                    content: ['/job/job_add', 'no'],
+                    title: '添加job详情',
+                    area: ['600px', '500px'],
+                    end: function () {
+                        searchData();
+                    }
+                });
             }
             , delJobs: function () {
-                table.
+                var checkStatus = table.checkStatus('jobs');
+                if (checkStatus.data.length === 0) {
+                    layer.msg("请选择要删除的记录！");
+                } else {
+                    var params = [];
+                    for (var i = 0; i < checkStatus.data.length; i++) {
+                        params.push(checkStatus.data[i].id);
+                    }
+                    var arr = {params: params};
+                    layer.confirm('确定要删除吗?', {icon: 3, title: '提示'}, function (index) {
+                        $.ajax({
+                            type: 'delete',
+                            url: '/frame/job/delete',
+                            data: arr,
+                            traditional: true,
+                            contentType: 'application/x-www-form-urlencoded',
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.code === "200") {
+                                    layer.msg("删除成功！");
+                                    layer.close(index);
+                                    searchData();
+                                } else {
+                                    layer.close(index);
+                                    layer.msg(res.msg);
+                                }
+                            }
+                        })
+                    }, function (index) {
+                        layer.close(index);
+                    });
+                }
             }
         };
 
@@ -101,6 +140,12 @@
             var type = $(this).data('type');
             active[type] ? active[type].call(this) : '';
         });
+
+        function searchData() {
+            table.reload("jobs", {
+                url: '/frame/job/all'
+            });
+        }
     })
 </script>
 </html>
