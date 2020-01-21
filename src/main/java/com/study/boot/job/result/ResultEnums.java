@@ -16,7 +16,8 @@ public enum ResultEnums implements Result {
     OPERATE_FORBID("4300", "forbidden"),
     NOT_FOUND("4004", "resource not found"),
     QUARTZ_ERROR("8000", "resource not found"),
-    BIZ_ERROR("3000", "biz error");
+    BIZ_ERROR("3000", "biz error"),
+    PARAMS_CANNOT_BE_NULL_ERROR("7000", "参数为空");
 
     private String code;
     private String msg;
