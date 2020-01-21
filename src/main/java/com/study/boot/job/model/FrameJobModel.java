@@ -25,14 +25,16 @@ public class FrameJobModel implements Serializable {
     private String jobName;
     @NotBlank
     private String jobGroup;
+    private String status;
     private String description;
 
     @Builder
-    public FrameJobModel(Long id, String jobClassName, String jobName, String jobGroup, String description) {
+    public FrameJobModel(Long id, String jobClassName, String jobName, String jobGroup, String status, String description) {
         this.id = id;
         this.jobClassName = jobClassName;
         this.jobName = jobName;
         this.jobGroup = jobGroup;
+        this.status = status;
         this.description = description;
     }
 }

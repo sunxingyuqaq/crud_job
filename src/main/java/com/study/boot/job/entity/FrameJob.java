@@ -28,13 +28,13 @@ public class FrameJob extends BaseEntity {
     private Integer type;
     private String description;
     /**
-     * 执行状态  0未执行  1执行中   默认0
+     * 执行状态  -1未配置trigger  0未执行  1执行中  2 停止   3暂停
      */
     private String status;
     private String scheduleName;
 
     @Builder
-    public FrameJob(Date operateDate, Date updateDate, Long id, String jobClassName, String jobName, String jobGroup, Integer type, String description, String status, String scheduleName) {
+    public FrameJob(Long id, String jobClassName, String jobName, String jobGroup, Integer type, String description, String status, String scheduleName, Date operateDate, Date updateDate) {
         super(operateDate, updateDate);
         this.id = id;
         this.jobClassName = jobClassName;

@@ -2,8 +2,8 @@ package com.study.boot.job.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.study.boot.job.entity.FrameJob;
+import com.study.boot.job.model.FrameDetail;
 import com.study.boot.job.model.FrameJobModel;
-import com.study.boot.job.model.FrameTriggerModel;
 
 /**
  * @author Xingyu Sun
@@ -28,9 +28,42 @@ public interface FrameJobService extends IService<FrameJob> {
     void addJob(FrameJobModel model);
 
     /**
-     * addJobToSchedule
+     * startJob
      *
-     * @param model
+     * @param id
+     * @return
      */
-    void addJobToSchedule(FrameTriggerModel model);
+    boolean startJob(long id);
+
+    /**
+     * stopJob
+     *
+     * @param id
+     * @return
+     */
+    boolean stopJob(long id);
+
+    /**
+     * pauseJob
+     *
+     * @param id
+     * @return
+     */
+    boolean pauseJob(long id);
+
+    /**
+     * resumeJob
+     *
+     * @param id
+     * @return
+     */
+    boolean resumeJob(long id);
+
+    /**
+     * updateStatus
+     *
+     * @param status
+     * @param detail
+     */
+    void updateStatus(String status, FrameDetail detail);
 }

@@ -18,24 +18,27 @@ import java.io.Serializable;
 public class FrameTriggerModel implements Serializable {
 
     @NotBlank
-    @JsonSerialize(using = ToStringSerializer.class)
-    private Long jobId;
+    private String jobId;
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
     @NotBlank
     private String triggerName;
     @NotBlank
     private String triggerGroup;
+    @NotBlank
     private String cron;
+    private String status;
     private String description;
 
     @Builder
-    public FrameTriggerModel(Long jobId, Long id, String triggerName, String triggerGroup, String cron, String description) {
+
+    public FrameTriggerModel(String jobId, Long id, String triggerName, String triggerGroup, String cron, String status, String description) {
         this.jobId = jobId;
         this.id = id;
         this.triggerName = triggerName;
         this.triggerGroup = triggerGroup;
         this.cron = cron;
+        this.status = status;
         this.description = description;
     }
 }

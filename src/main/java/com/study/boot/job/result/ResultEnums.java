@@ -15,6 +15,7 @@ public enum ResultEnums implements Result {
     SYSTEM_ERROR("5000", "system error"),
     OPERATE_FORBID("4300", "forbidden"),
     NOT_FOUND("4004", "resource not found"),
+    QUARTZ_ERROR("8000", "resource not found"),
     BIZ_ERROR("3000", "biz error");
 
     private String code;

@@ -1,6 +1,7 @@
 package com.study.boot.job.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.study.boot.job.dao.JobDao;
@@ -16,6 +17,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,12 +30,17 @@ import java.util.List;
 @RequestMapping("frame/job")
 public class JobManageController {
 
-    @Autowired
+
     private JobDao jobDao;
-    @Autowired
     private FrameJobService frameJobService;
-    @Autowired
     private FrameTriggerService frameTriggerService;
+
+    @Autowired
+    public JobManageController(JobDao jobDao, FrameJobService frameJobService, FrameTriggerService frameTriggerService) {
+        this.jobDao = jobDao;
+        this.frameJobService = frameJobService;
+        this.frameTriggerService = frameTriggerService;
+    }
 
     @GetMapping("/all")
     public CommonResult<Object> all(@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
@@ -79,8 +86,64 @@ public class JobManageController {
         if (exist) {
             return CommonResult.fail("jobName和jobGroup不能重复！");
         } else {
-            frameJobService.addJobToSchedule(model);
+            frameTriggerService.addFrameTrigger(model);
             return CommonResult.success();
         }
     }
+
+    @GetMapping(value = "/trigger/detail")
+    public CommonResult<Object> add(@RequestParam("id") String id) {
+        if (StrUtil.isBlank(id)) {
+            return CommonResult.fail("id can not be null");
+        } else {
+            Long jobId = Long.parseLong(id);
+            FrameTriggerModel model = frameTriggerService.getTriggerByJobId(jobId);
+            if (model != null) {
+                return CommonResult.success(model);
+            } else {
+                return CommonResult.success();
+            }
+        }
+    }
+
+    @PostMapping(value = "/start", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public CommonResult<Object> start(@NotBlank String id) {
+        log.info("id is {}", id);
+        boolean success = frameJobService.startJob(Long.parseLong(id));
+        if (success) {
+            return CommonResult.success();
+        }
+        return CommonResult.fail();
+    }
+
+    @PostMapping(value = "/stop", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public CommonResult<Object> stop(@NotBlank String id) {
+        log.info("id is {}", id);
+        boolean success = frameJobService.stopJob(Long.parseLong(id));
+        if (success) {
+            return CommonResult.success();
+        }
+        return CommonResult.fail();
+    }
+
+    @PostMapping(value = "/pause", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public CommonResult<Object> pause(@NotBlank String id) {
+        log.info("id is {}", id);
+        boolean success = frameJobService.pauseJob(Long.parseLong(id));
+        if (success) {
+            return CommonResult.success();
+        }
+        return CommonResult.fail();
+    }
+
+    @PostMapping(value = "/resume", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public CommonResult<Object> resume(@NotBlank String id) {
+        log.info("id is {}", id);
+        boolean success = frameJobService.resumeJob(Long.parseLong(id));
+        if (success) {
+            return CommonResult.success();
+        }
+        return CommonResult.fail();
+    }
+
 }

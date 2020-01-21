@@ -6,8 +6,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.study.boot.job.dao.FrameJobDao;
 import com.study.boot.job.entity.FrameJob;
 import com.study.boot.job.entity.FrameTrigger;
+import com.study.boot.job.model.FrameDetail;
 import com.study.boot.job.model.FrameJobModel;
-import com.study.boot.job.model.FrameTriggerModel;
 import com.study.boot.job.result.BizException;
 import com.study.boot.job.result.ResultEnums;
 import com.study.boot.job.service.FrameJobService;
@@ -15,6 +15,7 @@ import com.study.boot.job.service.FrameTriggerService;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
@@ -23,6 +24,7 @@ import java.util.Date;
  * @date 2020/1/3 14:22
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class FrameJobServiceImpl extends ServiceImpl<FrameJobDao, FrameJob> implements FrameJobService {
 
     @Autowired
@@ -48,52 +50,106 @@ public class FrameJobServiceImpl extends ServiceImpl<FrameJobDao, FrameJob> impl
                     .jobGroup(model.getJobGroup())
                     .description(model.getDescription())
                     .scheduleName(scheduler.getSchedulerName())
-                    .status("0")
+                    .type(1)
+                    .status("-1")
                     .operateDate(new Date())
                     .updateDate(new Date())
                     .build();
             save(job);
         } catch (SchedulerException e) {
             log.error("get schedule name error", e);
-            throw new BizException("get schedule name error", ResultEnums.BIZ_ERROR);
+            throw new BizException("get schedule name error", ResultEnums.QUARTZ_ERROR);
+        }
+        JobDetail jobDetail = JobBuilder.newJob(ClassUtil.loadClass(model.getJobClassName()))
+                .withIdentity(model.getJobName(), model.getJobGroup())
+                .withDescription(model.getDescription()).build();
+        try {
+            scheduler.addJob(jobDetail, false);
+        } catch (SchedulerException e) {
+            log.error("schedule addJob error", e);
+            throw new BizException("schedule addJob error", ResultEnums.QUARTZ_ERROR);
         }
     }
 
     @Override
-    public void addJobToSchedule(FrameTriggerModel model) {
-        FrameTrigger frameTrigger;
-        try {
-            frameTrigger = FrameTrigger
-                    .builder()
-                    .jobId(model.getJobId()).triggerName(model.getTriggerName()).triggerGroup(model.getTriggerGroup())
-                    .scheduleName(scheduler.getSchedulerName())
-                    .status("1")
-                    .operateDate(new Date())
-                    .updateDate(new Date())
-                    .build();
-            frameTriggerService.save(frameTrigger);
-        } catch (SchedulerException e) {
-            throw new BizException("get schedule name error", ResultEnums.BIZ_ERROR);
-        }
-        Long jobId = model.getJobId();
-        FrameJob job = getBaseMapper().selectById(jobId);
-        if (job == null) {
-            throw new BizException("job not find in database", ResultEnums.BIZ_ERROR);
-        }
-        JobDetail jobDetail = JobBuilder.newJob(ClassUtil.loadClass(job.getJobClassName()))
-                .withIdentity(job.getJobName(), job.getJobGroup())
-                .withDescription(job.getDescription()).build();
+    public boolean startJob(long id) {
+        FrameDetail detail = getBaseMapper().getDetail(id);
+        JobDetail jobDetail = JobBuilder.newJob(ClassUtil.loadClass(detail.getJobClassName()))
+                .withIdentity(detail.getJobName(), detail.getJobGroup())
+                .withDescription(detail.getDescription()).build();
         Trigger trigger = TriggerBuilder.newTrigger()
-                .withIdentity(model.getTriggerName(), model.getTriggerGroup())
-                .withSchedule(CronScheduleBuilder.cronSchedule(model.getCron()).withMisfireHandlingInstructionIgnoreMisfires())
+                .withIdentity(detail.getTriggerName(), detail.getTriggerGroup())
+                .withDescription(detail.getTriggerDesc())
+                .withSchedule(CronScheduleBuilder.cronSchedule(detail.getCron()).withMisfireHandlingInstructionDoNothing())
                 .build();
-        job.setStatus("1");
-        getBaseMapper().updateById(job);
         try {
             scheduler.scheduleJob(jobDetail, trigger);
         } catch (SchedulerException e) {
-            log.error("add job to schedule error", e);
-            throw new BizException("add job to schedule error", ResultEnums.BIZ_ERROR);
+            log.error("schedule startJob error", e);
+            throw new BizException("startJob error", ResultEnums.QUARTZ_ERROR);
         }
+        updateStatus("1", detail);
+        return true;
+    }
+
+    @Override
+    public boolean stopJob(long id) {
+        FrameDetail detail = getBaseMapper().getDetail(id);
+        TriggerKey key = TriggerKey.triggerKey(detail.getTriggerName(), detail.getTriggerGroup());
+        try {
+            scheduler.unscheduleJob(key);
+        } catch (SchedulerException e) {
+            log.error("schedule stopJob error", e);
+            throw new BizException("stopJob error", ResultEnums.QUARTZ_ERROR);
+        }
+        updateStatus("2", detail);
+        return true;
+    }
+
+    @Override
+    public boolean pauseJob(long id) {
+        FrameDetail detail = getBaseMapper().getDetail(id);
+        JobKey jobKey = JobKey.jobKey(detail.getJobName(), detail.getJobGroup());
+        try {
+            scheduler.pauseJob(jobKey);
+        } catch (SchedulerException e) {
+            log.error("schedule pauseJob error", e);
+            throw new BizException("pauseJob error", ResultEnums.QUARTZ_ERROR);
+        }
+        updateStatus("3", detail);
+        return true;
+    }
+
+    @Override
+    public boolean resumeJob(long id) {
+        FrameDetail detail = getBaseMapper().getDetail(id);
+        JobKey jobKey = JobKey.jobKey(detail.getJobName(), detail.getJobGroup());
+        try {
+            scheduler.resumeJob(jobKey);
+        } catch (SchedulerException e) {
+            log.error("schedule resumeJob error", e);
+            throw new BizException("resumeJob error", ResultEnums.QUARTZ_ERROR);
+        }
+        updateStatus("1", detail);
+        return true;
+    }
+
+    @Override
+    public void updateStatus(String status, FrameDetail detail) {
+        TriggerKey key = TriggerKey.triggerKey(detail.getTriggerName(), detail.getTriggerGroup());
+        try {
+            Trigger.TriggerState triggerState = scheduler.getTriggerState(key);
+            String name = triggerState.name();
+            FrameTrigger frameTrigger = frameTriggerService.getBaseMapper().selectById(detail.getTriggerId());
+            frameTrigger.setStatus(name);
+            frameTrigger.setUpdateDate(new Date());
+            frameTriggerService.getBaseMapper().updateById(frameTrigger);
+        } catch (SchedulerException e) {
+            log.error("get trigger state error", e);
+        }
+        FrameJob frameJob = getBaseMapper().selectById(detail.getId());
+        frameJob.setStatus(status);
+        frameJob.setUpdateDate(new Date());
+        updateById(frameJob);
     }
 }

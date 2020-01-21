@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>job trigger add</title>
+    <link href="lib/layui/css/layui.css" rel="stylesheet" th:href="@{/lib/layui/css/layui.css}"/>
+</head>
+<body>
+<div style="width: 80%;margin: 0 auto">
+    <form class="layui-form layui-form-pane" lay-filter="trigger" style="margin: 0 auto">
+        <div style="margin-top: 5px"></div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 200px">trigger name</label>
+            <div class="layui-input-block" style="margin-left: 200px">
+                <input autocomplete="off" class="layui-input" lay-verify="required" name="triggerName"
+                       placeholder="请输入trigger name" type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 200px">trigger group</label>
+            <div class="layui-input-block" style="margin-left: 200px">
+                <input autocomplete="off" class="layui-input" lay-verify="required" name="triggerGroup"
+                       placeholder="请输入trigger group"
+                       type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 200px">cron表达式</label>
+            <div class="layui-input-block" style="margin-left: 200px">
+                <input autocomplete="off" class="layui-input" lay-verify="required" name="cron"
+                       placeholder="请输入cron表达式"
+                       type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 200px">status</label>
+            <div class="layui-input-block" style="margin-left: 200px">
+                <input autocomplete="off" class="layui-input" name="status" placeholder="trigger status"
+                       readonly
+                       type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="width: 200px">trigger description</label>
+            <div class="layui-input-block" style="margin-left: 200px">
+                <input autocomplete="off" class="layui-input" name="description"
+                       placeholder="请输入description" type="text">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <button class="layui-btn" lay-filter="submit" lay-submit="" style="margin-left: 40%" type="submit">提交
+            </button>
+            <button class="layui-btn layui-btn-primary" type="reset">重置</button>
+        </div>
+    </form>
+</div>
+</body>
+<script src="lib/layui/layui.js" th:src="@{/lib/layui/layui.js}"></script>
+<script>
+    layui.use(['form', 'layedit', 'laydate'], function () {
+        var form = layui.form, layer = layui.layer, $ = layui.jquery;
+        //监听提交
+        var index = parent.layer.getFrameIndex(window.name);
+        var jobId = getQueryVariable("jobId");
+        getDataBean($, jobId, form);
+        form.on('submit(submit)', function (data) {
+            var result = JSON.stringify(data.field);
+            var params = JSON.parse(result);
+            params.jobId = jobId;
+            $.ajax({
+                type: 'post',
+                url: '/frame/job/trigger/add',
+                contentType: 'application/x-www-form-urlencoded',
+                data: params,
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code === "200") {
+                        layer.msg("添加成功！");
+                        setTimeout(function () {
+                            parent.layer.close(index);
+                        }, 1500)
+                    } else {
+                        layer.msg(res.msg);
+                    }
+                }
+            });
+            return false;
+        });
+    });
+
+    function getDataBean($, id, form) {
+        $.get("/frame/job/trigger/detail", {id: id}, function (res) {
+            if (res.code === "200") {
+                if (res.data != null) {
+                    form.val("trigger", {
+                        triggerName: res.data.triggerName,
+                        triggerGroup: res.data.triggerGroup,
+                        cron: res.data.cron,
+                        description: res.data.description,
+                        status: res.data.status
+                    })
+                }
+            } else {
+                layer.msg(res.msg);
+            }
+        })
+    }
+
+    function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i = 0; i < vars.length; i++) {
+            var pair = vars[i].split("=");
+            if (pair[0] === variable) {
+                return pair[1];
+            }
+        }
+        return "";
+    }
+</script>
+</html>

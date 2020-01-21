@@ -1,5 +1,6 @@
 package com.study.boot.job.page;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,7 @@ import java.util.List;
  * @author Xingyu Sun
  * @date 2019/12/30 14:55
  */
+@Slf4j
 @Controller
 public class IndexController {
 
@@ -38,4 +40,10 @@ public class IndexController {
     public String jobAdd() {
         return "job/job_add";
     }
+
+    @GetMapping("/job/job_trigger_add")
+    public String jobTriggerAdd() {
+        return "job/job_trigger_add";
+    }
+
 }

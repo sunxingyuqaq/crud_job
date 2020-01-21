@@ -24,16 +24,20 @@ public class FrameTrigger extends BaseEntity {
     private String triggerName;
     private String triggerGroup;
     private String status;
+    private String cron;
+    private String description;
     private String scheduleName;
 
     @Builder
-    public FrameTrigger(Date operateDate, Date updateDate, Long id, Long jobId, String triggerName, String triggerGroup, String status, String scheduleName) {
+    public FrameTrigger(Long id, Long jobId, String triggerName, String triggerGroup, String status, String cron, String description, String scheduleName, Date operateDate, Date updateDate) {
         super(operateDate, updateDate);
         this.id = id;
         this.jobId = jobId;
         this.triggerName = triggerName;
         this.triggerGroup = triggerGroup;
         this.status = status;
+        this.cron = cron;
+        this.description = description;
         this.scheduleName = scheduleName;
     }
 }

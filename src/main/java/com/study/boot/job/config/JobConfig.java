@@ -2,6 +2,8 @@ package com.study.boot.job.config;
 
 import cn.hutool.core.lang.Assert;
 import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SchedulerListener;
 import org.quartz.spi.JobFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -45,7 +47,14 @@ public class JobConfig {
     }
 
     @Bean
-    public Scheduler scheduler(SchedulerFactoryBean factoryBean){
-        return factoryBean.getScheduler();
+    public Scheduler scheduler(SchedulerFactoryBean factoryBean) {
+        Scheduler scheduler = factoryBean.getScheduler();
+        SchedulerListener mySchedulerListener = new MySchedulerListener();
+        try {
+            scheduler.getListenerManager().addSchedulerListener(mySchedulerListener);
+        } catch (SchedulerException e) {
+            e.printStackTrace();
+        }
+        return scheduler;
     }
 }

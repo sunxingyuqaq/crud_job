@@ -26,18 +26,59 @@
     <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
     <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
 </script>
+<script id="triggerBar" type="text/html">
+    <a class="layui-btn layui-btn-xs" lay-event="trigger-detail" style="">查看trigger</a>
+</script>
 <script src="lib/layui/layui.js" th:src="@{/lib/layui/layui.js}"></script>
 <script>
     layui.use(["table", "laydate", "jquery"], function () {
         var table = layui.table;
+        var $ = layui.$;
         var layer = layui.layer;
         var columns = [
-            {type: 'checkbox', title: '序号', width: 40},
-            {field: 'jobClassName', title: '执行类路径', width: '25%'},
-            {field: 'jobName', title: 'job名称', width: 180},
-            {field: 'jobGroup', title: 'job组', width: 180},
-            {field: 'description', title: '描述', width: 180},
-            {fixed: 'right', align: 'center', title: '操作', toolbar: '#barDemo'}
+            {type: 'checkbox', title: '序号', width: 40, align: 'center'},
+            {field: 'jobClassName', title: '执行类路径', width: '25%', align: 'center'},
+            {field: 'jobName', title: 'job名称', width: 80, align: 'center'},
+            {field: 'jobGroup', title: 'job组', width: 80, align: 'center'},
+            {field: 'description', title: '描述', width: 120, align: 'center'},
+            {
+                title: '状态', width: 120, align: 'center', templet: function (d) {
+                    var s = d.status;
+                    if (s == "-1") {
+                        return "job未配置trigger";
+                    } else if (s == "0") {
+                        return "job未执行";
+                    } else if (s == "1") {
+                        return "job执行中";
+                    } else if (s == "2") {
+                        return "job停止了";
+                    } else if (s == "3") {
+                        return "job暂停了";
+                    }
+                }
+            },
+            {title: 'job triggers settings', width: 160, align: 'center', toolbar: '#triggerBar'},
+            {
+                title: 'start', width: 65, align: 'center', templet: function (d) {
+                    return "<a class=\"layui-btn layui-btn-xs\" lay-event=\"startJob\">启动</a>";
+                }
+            },
+            {
+                title: 'stop', width: 65, align: 'center', templet: function (d) {
+                    return "<a class=\"layui-btn layui-btn-xs\" lay-event=\"stopJob\">停止</a>";
+                }
+            },
+            {
+                title: 'pause', width: 70, align: 'center', templet: function (d) {
+                    return "<a class=\"layui-btn layui-btn-xs\" lay-event=\"pauseJob\">暂停</a>";
+                }
+            },
+            {
+                title: 'resume', width: 80, align: 'center', templet: function (d) {
+                    return "<a class=\"layui-btn layui-btn-xs\" lay-event=\"resumeJob\">恢复</a>";
+                }
+            },
+            {align: 'center', width: 200, title: '操作', toolbar: '#barDemo'}
         ];
         var loading = layer.load(1);
         table.render({
@@ -46,6 +87,7 @@
             page: true,
             cols: [columns],
             toolbar: true,
+            title: 'job 列表',
             defaultToolbar: ['filter', 'exports', 'print', {
                 title: '提示',
                 layEvent: 'LAYTABLE_TIPS',
@@ -67,10 +109,20 @@
             }
         });
 
+        $.ajax({
+            type: 'post',
+            url: '/rest/sm2/sm2encode',
+            data: {},
+            contentType: 'application/x-www-form-urlencode',
+            success: function (res) {
+                layer.msg("更新成功！");
+            }
+        });
+
         table.on('tool(jobs)', function (obj) {
-            var data = obj.data;
+            var id = obj.data.id;
+            var optParams = {id: id};
             var layEvent = obj.event;
-            var tr = obj.tr;
             if (layEvent === 'detail') {
 
             } else if (layEvent === 'del') {
@@ -85,10 +137,89 @@
                 });
             } else if (layEvent === 'LAYTABLE_TIPS') {
                 layer.alert('Hi，头部工具栏扩展的右侧图标。');
+            } else if (layEvent === 'trigger-detail') {
+                layer.open({
+                    type: 2,
+                    title: '添加trigger',
+                    content: '/job/job_trigger_add?jobId=' + id,
+                    area: ['600px', '500px'],
+                    end: function () {
+                        searchData();
+                    }
+                })
+            } else if (layEvent === "startJob") {
+                var s = obj.data.status;
+                if (s == "-1") {
+                    layer.msg("请先配置trigger!")
+                } else {
+                    $.ajax({
+                        type: 'post',
+                        url: '/frame/job/start',
+                        data: optParams,
+                        contentType: 'application/x-www-form-urlencoded',
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res.code === "200") {
+                                layer.msg("启动成功！");
+                                searchData();
+                            } else {
+                                layer.msg(res.msg);
+                            }
+                        }
+                    })
+                }
+            } else if (layEvent === "stopJob") {
+                $.ajax({
+                    type: 'post',
+                    url: '/frame/job/stop',
+                    data: optParams,
+                    contentType: 'application/x-www-form-urlencoded',
+                    dataType: 'json',
+                    success: function (res) {
+                        if (res.code === "200") {
+                            layer.msg("停止成功！");
+                            searchData();
+                        } else {
+                            layer.msg(res.msg);
+                        }
+                    }
+                })
+            } else if (layEvent === "pauseJob") {
+                $.ajax({
+                    type: 'post',
+                    url: '/frame/job/pause',
+                    data: optParams,
+                    contentType: 'application/x-www-form-urlencoded',
+                    dataType: 'json',
+                    success: function (res) {
+                        if (res.code === "200") {
+                            layer.msg("暂停成功！");
+                            searchData();
+                        } else {
+                            layer.msg(res.msg);
+                        }
+                    }
+                })
+            } else if (layEvent === "resumeJob") {
+                $.ajax({
+                    type: 'post',
+                    url: '/frame/job/resume',
+                    data: optParams,
+                    contentType: 'application/x-www-form-urlencoded',
+                    dataType: 'json',
+                    success: function (res) {
+                        if (res.code === "200") {
+                            layer.msg("恢复成功！");
+                            searchData();
+                        } else {
+                            layer.msg(res.msg);
+                        }
+                    }
+                })
             }
         });
 
-        var $ = layui.$, active = {
+        var active = {
             addJob: function () {
                 layer.open({
                     type: 2,
@@ -99,8 +230,8 @@
                         searchData();
                     }
                 });
-            }
-            , delJobs: function () {
+            },
+            delJobs: function () {
                 var checkStatus = table.checkStatus('jobs');
                 if (checkStatus.data.length === 0) {
                     layer.msg("请选择要删除的记录！");
@@ -146,6 +277,7 @@
                 url: '/frame/job/all'
             });
         }
-    })
+
+    });
 </script>
 </html>
